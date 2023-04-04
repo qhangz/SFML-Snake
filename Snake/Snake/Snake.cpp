@@ -417,6 +417,7 @@ void Draw()
 
 	int detaX = GRIDSIZE / SCALE / 2;
 	int detaY = GRIDSIZE / SCALE / 2;
+	
 
 	//ªÊ÷∆±≥æ∞
 	for (int i = 0; i < width; i++)
@@ -429,17 +430,17 @@ void Draw()
 	}
 
 	//ªÊ÷∆…ﬂ
-	spSnakeHead.setPosition(headX * GRIDSIZE + detaX, headY * GRIDSIZE + detaY);
+	spSnakeHead.setPosition(headX * GRIDSIZE + detaX - 2, headY * GRIDSIZE + detaY - 1);
 	spSnakeHead.setRotation(headRotation);
 	window.draw(spSnakeHead);
 	for (int i = 1; i < ntail; i++)
 	{
-		spSnakeBody.setPosition(tailX[i] * GRIDSIZE + detaX, tailY[i] * GRIDSIZE + detaY);
+		spSnakeBody.setPosition(tailX[i] * GRIDSIZE + detaX - 2, tailY[i] * GRIDSIZE + detaY - 1);
 		window.draw(spSnakeBody);
 	}
 
 	//ªÊ÷∆fruit
-	spFruit.setPosition(fruitX * GRIDSIZE + detaX, fruitY * GRIDSIZE + detaY);
+	spFruit.setPosition(fruitX * GRIDSIZE + detaX - 2, fruitY * GRIDSIZE + detaY - 1);
 	window.draw(spFruit);
 
 	if (gameOver) {
@@ -593,6 +594,7 @@ void DrawStep()
 	int detaX = GRIDSIZE / SCALE / 2;
 	int detaY = GRIDSIZE / SCALE / 2;
 
+
 	//ªÊ÷∆±≥æ∞
 	for (int i = 0; i < width; i++)
 	{
@@ -610,7 +612,7 @@ void DrawStep()
 	{
 		stepLength = -stepLength;
 	}
-	spSnakeHead.setPosition((headX + stepX) * GRIDSIZE + detaX, (headY + stepY) * GRIDSIZE + detaY);
+	spSnakeHead.setPosition((headX + stepX) * GRIDSIZE + detaX - 2, (headY + stepY) * GRIDSIZE + detaY - 1);
 	spSnakeHead.setRotation(headRotation);
 	window.draw(spSnakeHead);
 
@@ -618,11 +620,11 @@ void DrawStep()
 	{
 		if (tailY[1] == headY && tailX[1] != headX)	//ÀÆ∆Ω∏˙ÀÊ
 		{
-			spSnakeBody.setPosition((tailX[1] + (headX - tailX[1]) * stepLength) * GRIDSIZE + detaX, tailY[1] * GRIDSIZE + detaY);
+			spSnakeBody.setPosition((tailX[1] + (headX - tailX[1]) * stepLength) * GRIDSIZE + detaX - 2, tailY[1] * GRIDSIZE + detaY - 1);
 		}
 		if (tailY[1] != headY && tailX[1] == headX)	// ˙÷±∏˙ÀÊ
 		{
-			spSnakeBody.setPosition(tailX[1] * GRIDSIZE + detaX, (tailY[1] + (headY - tailY[1]) * stepLength) * GRIDSIZE + detaY);
+			spSnakeBody.setPosition(tailX[1] * GRIDSIZE + detaX - 2, (tailY[1] + (headY - tailY[1]) * stepLength) * GRIDSIZE + detaY - 1);
 		}
 		window.draw(spSnakeBody);
 	}
@@ -630,17 +632,17 @@ void DrawStep()
 	{
 		if (tailY[i] == tailY[i - 1] && tailX[i] != tailX[i - 1])	//ÀÆ∆Ω∏˙ÀÊ
 		{
-			spSnakeBody.setPosition((tailX[i] +(tailX[i-1]-tailX[i]) * stepLength) * GRIDSIZE + detaX, tailY[i] * GRIDSIZE + detaY);
+			spSnakeBody.setPosition((tailX[i] +(tailX[i-1]-tailX[i]) * stepLength) * GRIDSIZE + detaX - 2, tailY[i] * GRIDSIZE + detaY - 1);
 		}
 		if (tailY[i] != tailY[i - 1] && tailX[i] == tailX[i - 1])	// ˙÷±∏˙ÀÊ
 		{
-			spSnakeBody.setPosition(tailX[i] * GRIDSIZE + detaX, (tailY[i] + (tailY[i - 1] - tailY[i]) * stepLength) * GRIDSIZE + detaY);
+			spSnakeBody.setPosition(tailX[i] * GRIDSIZE + detaX - 2, (tailY[i] + (tailY[i - 1] - tailY[i]) * stepLength) * GRIDSIZE + detaY - 1);
 		}
 		window.draw(spSnakeBody);
 	}
 
 	//ªÊ÷∆fruit
-	spFruit.setPosition(fruitX * GRIDSIZE + detaX, fruitY * GRIDSIZE + detaY);
+	spFruit.setPosition(fruitX * GRIDSIZE + detaX - 2, fruitY * GRIDSIZE + detaY - 1);
 	window.draw(spFruit);
 
 	if (gameOver) {
