@@ -2,6 +2,7 @@
 	舞台的坐标范围[0][width-1]、[0][height-1]
 	gameMode通过“空格键”控制游戏模式，连续和步进模式切换
 	x键退出游戏
+	+-键加减音乐音量，enter键控制音乐开关，空格键切换模式
 */
 
 #include <SFML/Graphics.hpp>
@@ -46,6 +47,9 @@ Sound soundEat, soundDie;
 Music bkMusic;
 int soundVolume;	//背景音量
 bool MusicOn;		//背景音乐开关
+sf::Clock KeyClockTimer;	//避免在输入模块设计时，如果同时按多个键，存在蛇调头导致的可能，导致游戏立即结束。
+int KeyClockDelay = 50;	//去抖动时间阈值，单位毫秒
+bool dirChange = false;
 
 //提示信息，函数参数接收文字板块在舞台中的原点坐标，通过initialX控制各行文字相对于原点x坐标的缩进
 void Prompt_info(int x, int y)
@@ -298,18 +302,127 @@ void Input()
 		}
     }
 
-	if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
-		if (dir != RIGHT)
-			dir = LEFT;
-	if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
-		if (dir != LEFT)
-			dir = RIGHT;
-	if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
-		if (dir != DOWN)
-			dir = UP;
-	if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
-		if (dir != UP)
-			dir = DOWN;
+	//方向按键事件（将时间抖动设置在dirChange上，实现keyClockDelay时间后才能进行下一次方向更新）
+	
+	if (KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
+	{
+		dirChange = false;
+	}
+	if(event.type == sf::Event::KeyPressed)
+	{
+		if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
+			if (dir != RIGHT && dirChange == false)
+			{
+				dir = LEFT;
+				dirChange = true;
+				KeyClockTimer.restart();
+			}
+		if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
+			if (dir != LEFT && dirChange == false)
+			{
+				dir = RIGHT;
+				dirChange = true;
+				KeyClockTimer.restart();
+			}
+		if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
+			if (dir != DOWN && dirChange == false)
+			{
+				dir = UP;
+				dirChange = true;
+				KeyClockTimer.restart();
+			}
+		if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
+			if (dir != UP && dirChange == false)
+			{
+				dir = DOWN;
+				dirChange = true;
+				KeyClockTimer.restart();
+			}
+	}
+
+
+	/*bool dirChange = false;
+	if(event.type == sf::Event::KeyPressed)
+	{
+		if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
+			if (dir != RIGHT && dirChange == false)
+			{
+				dir = LEFT;
+				dirChange = true;
+			}
+		if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
+			if (dir != LEFT && dirChange == false)
+			{
+				dir = RIGHT;
+				dirChange = true;
+			}
+		if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
+			if (dir != DOWN && dirChange == false)
+			{
+				dir = UP;
+				dirChange = true;
+			}
+		if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
+			if (dir != UP && dirChange == false)
+			{
+				dir = DOWN;
+				dirChange = true;
+			}
+	}*/
+	
+	//放抖动的解决不了两个按键按下的问题 
+	//if (event.type == sf::Event::KeyPressed)
+	//{
+	//	if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
+	//		if (dir != RIGHT && KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
+	//		{
+	//			dir = LEFT;
+	//			
+	//		}
+	//	if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
+	//		if (dir != LEFT && KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
+	//		{
+	//			dir = RIGHT;
+	//			
+	//		}
+	//	if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
+	//		if (dir != DOWN && KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
+	//		{
+	//			dir = UP;
+	//			
+	//		}
+	//	if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
+	//		if (dir != UP && KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
+	//		{
+	//			dir = DOWN;
+	//			
+	//		}
+	//}
+	//if (event.type == sf::Event::KeyReleased)
+	//{
+	//	if (event.key.code == sf::Keyboard::Left || event.key.code == sf::Keyboard::A)
+	//	{
+	//		KeyClockTimer.restart();
+	//	}
+	//	if (event.key.code == sf::Keyboard::Right || event.key.code == sf::Keyboard::D)
+	//	{
+	//		KeyClockTimer.restart();
+	//	}
+	//	if (event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::W)
+	//	{
+	//		KeyClockTimer.restart();
+	//	}
+	//	if (event.key.code == sf::Keyboard::Down || event.key.code == sf::Keyboard::S)
+	//	{
+	//		//sf::Time debounceTime = KeyClock.getElapsedTime();
+	//		//if (debounceTime.asMilliseconds() < KeyClockDelay) {
+	//		//	// 视为有效输入
+	//		//	// TODO: 处理有效输入的逻辑
+	//		//}
+	//		KeyClockTimer.restart();
+	//	}
+	//}
+
 
 }
 
