@@ -577,7 +577,8 @@ void LogicStep()
 	{
 	case UP:
 		stepY -= STEP;
-		if (stepY < -0.9999 || stepY >= 0.9999)
+		//if (stepY < -0.9999 || stepY >= 0.9999)
+		if(stepY < -0.9999 || stepY >= 0.9999)
 		{
 			headY--;
 			stepX = 0;
@@ -589,6 +590,7 @@ void LogicStep()
 		break;
 	case DOWN:
 		stepY += STEP;
+		//if ((stepY < -0.9999 && stepY > -1.9999) || (stepY >= 0.9999 && stepY <= 1.9999))
 		if (stepY < -0.9999 || stepY >= 0.9999)
 		{
 			headY++;
@@ -601,6 +603,7 @@ void LogicStep()
 		break;
 	case LEFT:
 		stepX -= STEP;
+		//if ((stepX < -0.9999 && stepX > -1.9999) || (stepX >= 0.9999 && stepX <= 1.9999))
 		if (stepX < -0.9999 || stepX >= 0.9999)
 		{
 			headX--;
@@ -613,6 +616,7 @@ void LogicStep()
 		break;
 	case RIGHT:
 		stepX += STEP;
+		//if ((stepX < -0.9999 && stepX > -1.9999) || (stepX >= 0.9999 && stepX <= 1.9999))
 		if (stepX < -0.9999 || stepX >= 0.9999)
 		{
 			headX++;
@@ -628,13 +632,31 @@ void LogicStep()
 		break;
 	}
 
+	bool cross;
+	cross = false;
 	//´©Ç½
-	if (headX >= width)headX = 0;
-	else if (headX < 0)headX = STAGE_WIDTH - 1;
-	if (headY >= height)headY = 0;
-	else if (headY < 0)headY = STAGE_HEIGHT - 1;
+	if (headX >= width)
+	{
+		headX = 0;
+		cross = true;
+	}
+	else if (headX < 0)
+	{
+		headX = STAGE_WIDTH - 1;
+		cross = true;
+	}
+	if (headY >= height)
+	{
+		headY = 0;
+		cross = true;
+	}
+	else if (headY < 0)
+	{
+		headY = STAGE_HEIGHT - 1;
+		cross = true;
+	}
 
-	if (updateFlag == true)
+	if (updateFlag == true || cross == true)
 	{
 
 		//×²Ç½Ôògameover
