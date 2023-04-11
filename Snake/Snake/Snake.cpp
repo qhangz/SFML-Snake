@@ -23,6 +23,7 @@ using namespace sf;
 
 bool gameOver;
 bool gameQuit;
+bool gamePause;
 
 const int width = STAGE_WIDTH;
 const int height = STAGE_HEIGHT;
@@ -223,6 +224,7 @@ void Initial()
     //fruitFlash = false;
     gameOver = false;
 	gameQuit = false;
+	gamePause = false;
     //isFullWidth = true;
     //isPause = false;
 
@@ -776,15 +778,19 @@ int main()
 		Initial();
 		while (window.isOpen() && gameOver == false)
 		{
+			
 			Input();
 			switch (GameMode)
 			{
 			case 1:
 				delay++;
-				if (delay % 10 == 0)
+				if (!gamePause || !gameOver)
 				{
-					delay = 0;
-					Logic();
+					if (delay % 10 == 0)
+					{
+						delay = 0;
+						Logic();
+					}
 				}
 
 				Draw();
