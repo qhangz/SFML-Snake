@@ -3,6 +3,8 @@
 	gameMode通过“空格键”控制游戏模式，连续和步进模式切换
 	x键退出游戏
 	+-键加减音乐音量，enter键控制音乐开关，空格键切换模式
+	穿墙一闪而过的问题在DrawStep函数中完成，当前后蛇身节点不相邻时不绘制蛇身
+	蛇头180度旋转的解决方法：当蛇头步进一个完整的放个之后再对下一次的方向变换做响应
 */
 
 #include <SFML/Graphics.hpp>
@@ -24,6 +26,7 @@ using namespace sf;
 bool gameOver;
 bool gameQuit;
 bool gamePause;
+bool MutexOnceInput;//确保步进一个方格后才能做下一次的方向变化
 
 const int width = STAGE_WIDTH;
 const int height = STAGE_HEIGHT;
@@ -154,7 +157,7 @@ void gameOver_info(int x,int y)
 void Initial()
 {
 	window.setFramerateLimit(60);	//每秒设置目标帧率
-
+	
 	//加载字体
 	if (!font.loadFromFile("../data/fonts/ZCOOLKuaiLe-Regular.ttf"))
 	{
@@ -225,6 +228,7 @@ void Initial()
     gameOver = false;
 	gameQuit = false;
 	gamePause = false;
+	MutexOnceInput = true;
     //isFullWidth = true;
     //isPause = false;
 
@@ -305,8 +309,9 @@ void Input()
     }
 
 	//方向按键事件（将时间抖动设置在dirChange上，实现keyClockDelay时间后才能进行下一次方向更新）
-	
-	if (KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
+	//这个时间还是不好控制啊，随着游戏帧率的提高，两次响应的时间间隔的设置还是容易出现问题
+	//所以将游戏逻辑设置为，当蛇头步进一个各自之后再响应下一个方向变换
+	/*if (KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
 	{
 		dirChange = false;
 	}
@@ -340,91 +345,53 @@ void Input()
 				dirChange = true;
 				KeyClockTimer.restart();
 			}
-	}
-
-
-	/*bool dirChange = false;
-	if(event.type == sf::Event::KeyPressed)
-	{
-		if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
-			if (dir != RIGHT && dirChange == false)
-			{
-				dir = LEFT;
-				dirChange = true;
-			}
-		if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
-			if (dir != LEFT && dirChange == false)
-			{
-				dir = RIGHT;
-				dirChange = true;
-			}
-		if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
-			if (dir != DOWN && dirChange == false)
-			{
-				dir = UP;
-				dirChange = true;
-			}
-		if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
-			if (dir != UP && dirChange == false)
-			{
-				dir = DOWN;
-				dirChange = true;
-			}
 	}*/
 	
-	//放抖动的解决不了两个按键按下的问题 
-	//if (event.type == sf::Event::KeyPressed)
-	//{
-	//	if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
-	//		if (dir != RIGHT && KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
-	//		{
-	//			dir = LEFT;
-	//			
-	//		}
-	//	if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
-	//		if (dir != LEFT && KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
-	//		{
-	//			dir = RIGHT;
-	//			
-	//		}
-	//	if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
-	//		if (dir != DOWN && KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
-	//		{
-	//			dir = UP;
-	//			
-	//		}
-	//	if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
-	//		if (dir != UP && KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
-	//		{
-	//			dir = DOWN;
-	//			
-	//		}
-	//}
-	//if (event.type == sf::Event::KeyReleased)
-	//{
-	//	if (event.key.code == sf::Keyboard::Left || event.key.code == sf::Keyboard::A)
-	//	{
-	//		KeyClockTimer.restart();
-	//	}
-	//	if (event.key.code == sf::Keyboard::Right || event.key.code == sf::Keyboard::D)
-	//	{
-	//		KeyClockTimer.restart();
-	//	}
-	//	if (event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::W)
-	//	{
-	//		KeyClockTimer.restart();
-	//	}
-	//	if (event.key.code == sf::Keyboard::Down || event.key.code == sf::Keyboard::S)
-	//	{
-	//		//sf::Time debounceTime = KeyClock.getElapsedTime();
-	//		//if (debounceTime.asMilliseconds() < KeyClockDelay) {
-	//		//	// 视为有效输入
-	//		//	// TODO: 处理有效输入的逻辑
-	//		//}
-	//		KeyClockTimer.restart();
-	//	}
-	//}
-
+	if (MutexOnceInput)//确保步进一个方格后才能做下一次的方向变化
+	{
+		if (event.type == sf::Event::KeyPressed)
+		{
+			if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
+			{
+				if (dir != RIGHT && dirChange == false)
+				{
+					dir = LEFT;
+					MutexOnceInput = false;
+					KeyClockTimer.restart();
+				}
+			}
+			else if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
+			{
+				if (dir != LEFT && dirChange == false)
+				{
+					dir = RIGHT;
+					MutexOnceInput = false;
+					KeyClockTimer.restart();
+				}
+			}
+			else if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
+			{
+				if (dir != DOWN && dirChange == false)
+				{
+					dir = UP;
+					MutexOnceInput = false;
+					KeyClockTimer.restart();
+				}
+			}
+			else if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
+			{
+				if (dir != UP && dirChange == false)
+				{
+					dir = DOWN;
+					MutexOnceInput = false;
+					KeyClockTimer.restart();
+				}
+			}
+		}
+	}
+	
+	
+	
 
 }
 
@@ -577,7 +544,6 @@ void LogicStep()
 	{
 	case UP:
 		stepY -= STEP;
-		//if (stepY < -0.9999 || stepY >= 0.9999)
 		if(stepY < -0.9999 || stepY >= 0.9999)
 		{
 			headY--;
@@ -586,11 +552,11 @@ void LogicStep()
 			dir_ing = dir;
 			headRotation = 0;
 			updateFlag = true;
+			MutexOnceInput = true;//确保步进一个方格后才能做下一次的方向变化
 		}
 		break;
 	case DOWN:
 		stepY += STEP;
-		//if ((stepY < -0.9999 && stepY > -1.9999) || (stepY >= 0.9999 && stepY <= 1.9999))
 		if (stepY < -0.9999 || stepY >= 0.9999)
 		{
 			headY++;
@@ -599,11 +565,11 @@ void LogicStep()
 			dir_ing = dir;
 			headRotation = 180;
 			updateFlag = true;
+			MutexOnceInput = true;
 		}
 		break;
 	case LEFT:
 		stepX -= STEP;
-		//if ((stepX < -0.9999 && stepX > -1.9999) || (stepX >= 0.9999 && stepX <= 1.9999))
 		if (stepX < -0.9999 || stepX >= 0.9999)
 		{
 			headX--;
@@ -612,11 +578,11 @@ void LogicStep()
 			dir_ing = dir;
 			headRotation = -90;
 			updateFlag = true;
+			MutexOnceInput = true;
 		}
 		break;
 	case RIGHT:
 		stepX += STEP;
-		//if ((stepX < -0.9999 && stepX > -1.9999) || (stepX >= 0.9999 && stepX <= 1.9999))
 		if (stepX < -0.9999 || stepX >= 0.9999)
 		{
 			headX++;
@@ -625,38 +591,35 @@ void LogicStep()
 			dir_ing = dir;
 			headRotation = 90;
 			updateFlag = true;
+			MutexOnceInput = true;
 		}
 		break;
 	default:
 		dir_ing = dir;
+		MutexOnceInput = true;
 		break;
 	}
 
-	bool cross;
-	cross = false;
+	
 	//穿墙
 	if (headX >= width)
 	{
 		headX = 0;
-		cross = true;
 	}
 	else if (headX < 0)
 	{
 		headX = STAGE_WIDTH - 1;
-		cross = true;
 	}
 	if (headY >= height)
 	{
 		headY = 0;
-		cross = true;
 	}
 	else if (headY < 0)
 	{
 		headY = STAGE_HEIGHT - 1;
-		cross = true;
 	}
 
-	if (updateFlag == true || cross == true)
+	if (updateFlag == true)
 	{
 
 		//撞墙则gameover
@@ -757,11 +720,17 @@ void DrawStep()
 	{
 		if (tailY[1] == headY && tailX[1] != headX)	//水平跟随
 		{
-			spSnakeBody.setPosition((tailX[1] + (headX - tailX[1]) * stepLength) * GRIDSIZE + detaX - 2, tailY[1] * GRIDSIZE + detaY - 1);
+			if (abs(headX - tailX[1]) == 1)//解决蛇身秒闪过去的动画
+			{
+				spSnakeBody.setPosition((tailX[1] + (headX - tailX[1]) * stepLength) * GRIDSIZE + detaX - 2, tailY[1] * GRIDSIZE + detaY - 1);
+			}
 		}
 		if (tailY[1] != headY && tailX[1] == headX)	//竖直跟随
 		{
-			spSnakeBody.setPosition(tailX[1] * GRIDSIZE + detaX - 2, (tailY[1] + (headY - tailY[1]) * stepLength) * GRIDSIZE + detaY - 1);
+			if (abs(headY - tailY[1]) == 1)//解决蛇身秒闪过去的动画
+			{
+				spSnakeBody.setPosition(tailX[1] * GRIDSIZE + detaX - 2, (tailY[1] + (headY - tailY[1]) * stepLength) * GRIDSIZE + detaY - 1);
+			}
 		}
 		window.draw(spSnakeBody);
 	}
@@ -769,11 +738,17 @@ void DrawStep()
 	{
 		if (tailY[i] == tailY[i - 1] && tailX[i] != tailX[i - 1])	//水平跟随
 		{
-			spSnakeBody.setPosition((tailX[i] +(tailX[i-1]-tailX[i]) * stepLength) * GRIDSIZE + detaX - 2, tailY[i] * GRIDSIZE + detaY - 1);
+			if (abs(tailX[i - 1] - tailX[i]) == 1)//解决蛇身秒闪过去的动画
+			{
+				spSnakeBody.setPosition((tailX[i] + (tailX[i - 1] - tailX[i]) * stepLength) * GRIDSIZE + detaX - 2, tailY[i] * GRIDSIZE + detaY - 1);
+			}
 		}
 		if (tailY[i] != tailY[i - 1] && tailX[i] == tailX[i - 1])	//竖直跟随
 		{
-			spSnakeBody.setPosition(tailX[i] * GRIDSIZE + detaX - 2, (tailY[i] + (tailY[i - 1] - tailY[i]) * stepLength) * GRIDSIZE + detaY - 1);
+			if (abs(tailY[i - 1] - tailY[i]) == 1)//解决蛇身秒闪过去的动画
+			{
+				spSnakeBody.setPosition(tailX[i] * GRIDSIZE + detaX - 2, (tailY[i] + (tailY[i - 1] - tailY[i]) * stepLength) * GRIDSIZE + detaY - 1);
+			}
 		}
 		window.draw(spSnakeBody);
 	}
@@ -851,3 +826,15 @@ int main()
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
