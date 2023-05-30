@@ -10,6 +10,7 @@
 #include <SFML/Graphics.hpp>
 #include<SFML/Audio.hpp>
 #include<iostream>
+#include<Windows.h>
 
 #define WINDOW_WIDTH 80     //窗口宽度
 #define WINDOW_HEIGHT 25    //窗口高度
@@ -222,7 +223,7 @@ void Initial()
 	bkMusic.setLoop(true);		//背景音乐循环
 	soundVolume = 50;
 	MusicOn = true;
-	std::cout << "soundVolume:" << soundVolume << std::endl;
+	//std::cout << "soundVolume:" << soundVolume << std::endl;
 
     //fruitFlash = false;
     gameOver = false;
@@ -267,8 +268,18 @@ void Input()
 			gameOver = true;
 			gameQuit = true;
 		}
+		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Escape)
+		{
+			window.close();	
+			gameOver = true;
+			gameQuit = true;
+		}
 		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::X)
+		{
 			window.close();
+			gameOver = true;
+			gameQuit = true;
+		}
 		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Space)
 		{
 			if (GameMode == 1)
@@ -285,13 +296,13 @@ void Input()
 		{
 			soundVolume += 5;
 			bkMusic.setVolume(soundVolume);
-			std::cout << "soundVolume:" << soundVolume << std::endl;
+			//std::cout << "soundVolume:" << soundVolume << std::endl;
 		}
 		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Subtract)
 		{
 			soundVolume -= 5;
 			bkMusic.setVolume(soundVolume);
-			std::cout << "soundVolume:" << soundVolume << std::endl;
+			//std::cout << "soundVolume:" << soundVolume << std::endl;
 		}
 		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Enter)
 		{
@@ -769,10 +780,14 @@ int main()
     
     //sf::CircleShape shape(100.f);
     //shape.setFillColor(sf::Color::Green);
+	HWND hwnd = GetConsoleWindow();
+	::SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, NULL);
+	//程序运行至此处后，控制台窗口就会隐藏
 
 	do
 	{
 		Initial();
+		
 		while (window.isOpen() && gameOver == false)
 		{
 			
@@ -799,6 +814,10 @@ int main()
 			}
 		}
 		//GameOver_info();
+		if (gameQuit == true)
+		{
+			break;
+		}
 		while (gameOver)
 		{
 			Event e;

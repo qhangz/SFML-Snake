@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\work\gameprogram\Snake\Release\Snake.exe</FullPath>
+      <FullPath>D:\work\gameprogram\SFML_Snake\Snake\Release\Snake.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
