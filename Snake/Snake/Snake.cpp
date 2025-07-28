@@ -319,90 +319,35 @@ void Input()
 		}
     }
 
-	//方向按键事件（将时间抖动设置在dirChange上，实现keyClockDelay时间后才能进行下一次方向更新）
-	//这个时间还是不好控制啊，随着游戏帧率的提高，两次响应的时间间隔的设置还是容易出现问题
-	//所以将游戏逻辑设置为，当蛇头步进一个各自之后再响应下一个方向变换
-	/*if (KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
+		
+	if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
 	{
-		dirChange = false;
-	}
-	if(event.type == sf::Event::KeyPressed)
-	{
-		if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
-			if (dir != RIGHT && dirChange == false)
-			{
-				dir = LEFT;
-				dirChange = true;
-				KeyClockTimer.restart();
-			}
-		if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
-			if (dir != LEFT && dirChange == false)
-			{
-				dir = RIGHT;
-				dirChange = true;
-				KeyClockTimer.restart();
-			}
-		if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
-			if (dir != DOWN && dirChange == false)
-			{
-				dir = UP;
-				dirChange = true;
-				KeyClockTimer.restart();
-			}
-		if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
-			if (dir != UP && dirChange == false)
-			{
-				dir = DOWN;
-				dirChange = true;
-				KeyClockTimer.restart();
-			}
-	}*/
-	
-	if (MutexOnceInput)//确保步进一个方格后才能做下一次的方向变化
-	{
-		if (event.type == sf::Event::KeyPressed)
+		if (dir != RIGHT)
 		{
-			if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
-			{
-				if (dir != RIGHT && dirChange == false)
-				{
-					dir = LEFT;
-					MutexOnceInput = false;
-					KeyClockTimer.restart();
-				}
-			}
-			else if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
-			{
-				if (dir != LEFT && dirChange == false)
-				{
-					dir = RIGHT;
-					MutexOnceInput = false;
-					KeyClockTimer.restart();
-				}
-			}
-			else if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
-			{
-				if (dir != DOWN && dirChange == false)
-				{
-					dir = UP;
-					MutexOnceInput = false;
-					KeyClockTimer.restart();
-				}
-			}
-			else if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
-			{
-				if (dir != UP && dirChange == false)
-				{
-					dir = DOWN;
-					MutexOnceInput = false;
-					KeyClockTimer.restart();
-				}
-			}
+			dir = LEFT;
 		}
 	}
-	
-	
-	
+	else if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
+	{
+		if (dir != LEFT)
+		{
+			dir = RIGHT;
+		}
+	}
+	else if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
+	{
+		if (dir != DOWN && dirChange == false)
+		{
+			dir = UP;
+		}
+	}
+	else if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
+	{
+		if (dir != UP && dirChange == false)
+		{
+			dir = DOWN;
+		}
+	}
 
 }
 
@@ -541,6 +486,155 @@ void Draw()
 	}
 
     window.display();	//把显示缓冲区的内容，显示到屏幕上，sfml采用的是双缓冲机制
+}
+
+void InputStep()
+{
+	sf::Event event;
+	while (window.pollEvent(event))
+	{
+		if ((event.type == sf::Event::Closed))
+		{
+			window.close();
+			gameOver = true;
+			gameQuit = true;
+		}
+		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Escape)
+		{
+			window.close();
+			gameOver = true;
+			gameQuit = true;
+		}
+		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::X)
+		{
+			window.close();
+			gameOver = true;
+			gameQuit = true;
+		}
+		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Space)
+		{
+			if (GameMode == 1)
+			{
+				GameMode = 2;
+			}
+			else
+			{
+				GameMode = 1;
+			}
+			std::cout << "GameMode:" << GameMode << std::endl;
+		}
+		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Add)
+		{
+			soundVolume += 5;
+			bkMusic.setVolume(soundVolume);
+			//std::cout << "soundVolume:" << soundVolume << std::endl;
+		}
+		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Subtract)
+		{
+			soundVolume -= 5;
+			bkMusic.setVolume(soundVolume);
+			//std::cout << "soundVolume:" << soundVolume << std::endl;
+		}
+		if (event.type == sf::Event::EventType::KeyReleased && event.key.code == sf::Keyboard::Enter)
+		{
+			if (MusicOn == true)
+			{
+				bkMusic.stop();
+				MusicOn = false;
+			}
+			else
+			{
+				bkMusic.play();
+				MusicOn = true;
+			}
+		}
+	}
+
+	//方向按键事件（将时间抖动设置在dirChange上，实现keyClockDelay时间后才能进行下一次方向更新）
+	//这个时间还是不好控制啊，随着游戏帧率的提高，两次响应的时间间隔的设置还是容易出现问题
+	//所以将游戏逻辑设置为，当蛇头步进一个各自之后再响应下一个方向变换
+	/*if (KeyClockTimer.getElapsedTime().asMilliseconds() > KeyClockDelay)
+	{
+		dirChange = false;
+	}
+	if(event.type == sf::Event::KeyPressed)
+	{
+		if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
+			if (dir != RIGHT && dirChange == false)
+			{
+				dir = LEFT;
+				dirChange = true;
+				KeyClockTimer.restart();
+			}
+		if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
+			if (dir != LEFT && dirChange == false)
+			{
+				dir = RIGHT;
+				dirChange = true;
+				KeyClockTimer.restart();
+			}
+		if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
+			if (dir != DOWN && dirChange == false)
+			{
+				dir = UP;
+				dirChange = true;
+				KeyClockTimer.restart();
+			}
+		if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
+			if (dir != UP && dirChange == false)
+			{
+				dir = DOWN;
+				dirChange = true;
+				KeyClockTimer.restart();
+			}
+	}*/
+
+	if (MutexOnceInput)//确保步进一个方格后才能做下一次的方向变化
+	{
+		if (event.type == sf::Event::KeyPressed)
+		{
+			if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
+			{
+				if (dir != RIGHT && dirChange == false)
+				{
+					dir = LEFT;
+					MutexOnceInput = false;
+					KeyClockTimer.restart();
+				}
+			}
+			else if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
+			{
+				if (dir != LEFT && dirChange == false)
+				{
+					dir = RIGHT;
+					MutexOnceInput = false;
+					KeyClockTimer.restart();
+				}
+			}
+			else if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
+			{
+				if (dir != DOWN && dirChange == false)
+				{
+					dir = UP;
+					MutexOnceInput = false;
+					KeyClockTimer.restart();
+				}
+			}
+			else if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
+			{
+				if (dir != UP && dirChange == false)
+				{
+					dir = DOWN;
+					MutexOnceInput = false;
+					KeyClockTimer.restart();
+				}
+			}
+		}
+	}
+
+
+
+
 }
 
 void LogicStep()
@@ -791,10 +885,11 @@ int main()
 		while (window.isOpen() && gameOver == false)
 		{
 			
-			Input();
+			//Input();
 			switch (GameMode)
 			{
 			case 1:
+				Input();
 				delay++;
 				if (!gamePause || !gameOver)
 				{
@@ -808,6 +903,7 @@ int main()
 				Draw();
 				break;
 			case 2:
+				InputStep();
 				LogicStep();
 				DrawStep();
 				break;
