@@ -4,7 +4,8 @@
 	x键退出游戏
 	+-键加减音乐音量，enter键控制音乐开关，空格键切换模式
 	穿墙一闪而过的问题在DrawStep函数中完成，当前后蛇身节点不相邻时不绘制蛇身
-	蛇头180度旋转的解决方法：当蛇头步进一个完整的放个之后再对下一次的方向变换做响应
+	蛇头180度旋转的解决方法（连续模式中）：当蛇头步进一个完整的方格之后再对下一次的方向变换做响应
+	步进模式中，配置dirChange，一次逻辑判断实现位置变换后才允许下一次input中对方向的改变
 */
 
 #include <SFML/Graphics.hpp>
@@ -232,6 +233,7 @@ void Initial()
 	MutexOnceInput = true;
     //isFullWidth = true;
     //isPause = false;
+	dirChange = false;
 
 	GameMode = 2;
 	stepX = 0.0;
@@ -320,32 +322,39 @@ void Input()
     }
 
 		
-	if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
+	if (dirChange == false)
 	{
-		if (dir != RIGHT)
+		if (Keyboard::isKeyPressed(Keyboard::Left) || Keyboard::isKeyPressed(Keyboard::A))
 		{
-			dir = LEFT;
+			if (dir != RIGHT)
+			{
+				dir = LEFT;
+				dirChange = true;
+			}
 		}
-	}
-	else if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
-	{
-		if (dir != LEFT)
+		else if (Keyboard::isKeyPressed(Keyboard::Right) || Keyboard::isKeyPressed(Keyboard::D))
 		{
-			dir = RIGHT;
+			if (dir != LEFT)
+			{
+				dir = RIGHT;
+				dirChange = true;
+			}
 		}
-	}
-	else if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
-	{
-		if (dir != DOWN && dirChange == false)
+		else if (Keyboard::isKeyPressed(Keyboard::Up) || Keyboard::isKeyPressed(Keyboard::W))
 		{
-			dir = UP;
+			if (dir != DOWN)
+			{
+				dir = UP;
+				dirChange = true;
+			}
 		}
-	}
-	else if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
-	{
-		if (dir != UP && dirChange == false)
+		else if (Keyboard::isKeyPressed(Keyboard::Down) || Keyboard::isKeyPressed(Keyboard::S))
 		{
-			dir = DOWN;
+			if (dir != UP)
+			{
+				dir = DOWN;
+				dirChange = true;
+			}
 		}
 	}
 
@@ -362,18 +371,22 @@ void Logic()
 	case UP:
 		headY--;
 		headRotation = 0;
+		dirChange = false;
 		break;
 	case DOWN:
 		headY++;
 		headRotation = 180;
+		dirChange = false;
 		break;
 	case LEFT:
 		headX--;
 		headRotation = -90;
+		dirChange = false;
 		break;
 	case RIGHT:
 		headX++;
 		headRotation = 90;
+		dirChange = false;
 		break;
 	default:
 		break;
@@ -899,7 +912,6 @@ int main()
 						Logic();
 					}
 				}
-
 				Draw();
 				break;
 			case 2:
